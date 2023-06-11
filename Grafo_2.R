@@ -15,8 +15,8 @@ df2= df1%>%
 
 ggplot(df2, mapping = aes(x= Year , y= n))+
   geom_bar(stat = "identity", aes(fill = Mission_Status), width = 0.8, position = position_stack())+
-  labs(title = "Number of Missions Status during the following year",
-    y="Numbers of occurrences",)+
+  labs(title = "Numero di stati che le missioni hanno assunto",
+    y="Numero di occorrenze", x="Anni analizzati")+
   theme(text = element_text(color = "black")
     ,panel.background = element_rect(fill ="#FaFFFF")
     ,plot.background = element_rect(fill = "white")

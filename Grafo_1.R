@@ -4,8 +4,8 @@ library(ggplot2)
 library(ggmap)
 library(tidyr)
 
+#Dataset di partenza
 map.world = map_data("world")
-
 originalDataset = read.csv("mission_launches.csv")
 
 df = originalDataset %>%
@@ -31,7 +31,7 @@ map.world_joined$n = as.numeric(map.world_joined$n)
 ggplot() +
   geom_polygon(data = map.world_joined, aes(x = long, y = lat, group = group, fill = n)) +
   scale_fill_gradient(low = "#abdbe3", high = "#154c79") +
-  labs(title = "Missiles Launches from over the world") +
+  labs(title = "Lanci missilistici nel mondo", y="Latitudine", x="Longitudine") +
   theme(text = element_text(family = "Times New Roman", color = "black",)
     ,panel.background = element_rect(fill ="#FaFFFF")
     ,plot.background = element_rect(fill = "white")
@@ -39,7 +39,8 @@ ggplot() +
     ,plot.title = element_text(size = 30)
     ,plot.subtitle = element_text(size = 10)
     ,axis.text = element_blank()
-    ,axis.title = element_blank()
     ,axis.ticks = element_blank()
+    ,axis.title.x = element_text(size = 20)
+    ,axis.title.y = element_text(size = 20)
     ,legend.position = "none"
   )
