@@ -40,8 +40,6 @@ ggplot() +
     ,plot.background = element_rect(fill = "white")
     ,panel.grid = element_blank()
     ,plot.title = element_text(size = 20)
-    #,axis.text = element_blank()
-    #,axis.ticks = element_blank()
     ,axis.title.x = element_text(size = 10)
     ,axis.title.y = element_text(size = 10)
     ,legend.position = "none"

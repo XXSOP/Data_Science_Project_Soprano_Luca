@@ -1,7 +1,7 @@
 ---
 title: "Presentazione"
 author: "Luca Soprano"
-date: "2023-06-26"
+date: "26-06-2023"
 output: 
   ioslides_presentation:
     incremental: yes
@@ -11,45 +11,108 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+## Contesto e domande poste
+Dal 1957 in poi gli esseri umani hanno cercato di lanciare missili verso altri astri. Alla luce di ciò, mi sono chiesto:\ 
+
+1. Quali sono i paesi con il maggior numero di lanci?
+2. Quanti di questi lanci sono andati a buon fine? Quanti no?
+
+## Obiettivi 
+1. Capire quali sono le nazioni che si sono impegnati di più in questo determinato campo.
+
+2. Analizzare se effettivamente i lanci missilistici sono risultati utili o se si sono rivelati uno spreco di tempo e risorse.
+
 ## Breve introduzione del dataset
 \
-Per questo progetto il dataset che ho usato è il seguente: **"mission_launches.csv"** scaricato gratuitamente dal sito web di [kaggle](https://www.kaggle.com/), tratta dei lanci missilistici avvenuti dal 1957 al 2020.
-\
-\
-\
+Il dataset utilizzato è il seguente: \
+-[**"Space Mission Launches"**](https://www.kaggle.com/datasets/sefercanapaydn/mission-launches) 
+scaricato gratuitamente dal sito web di [kaggle](https://www.kaggle.com/). \
+Il dataset contiene dati relativi ai lanci missilistici avvenuti dal 1957 al 2020.
 \
 <div style="text-align:center"><img src ="Immagini_presentazione/img1.png"/></div>
+
 ## Struttura dataset
-E' strutturato in questo modo :\
-**1.** La colonna **Id** contenente un identificatore per ogni riga del dataset.\
-**2.** La colonna **Organisation** contenente il nome dell'organizzazione la quale ha organizzato le missioni(un esempio contenuto in quest'ultima potrebbe essere la NASA).\
-**3.** La colonna **Location** la quale contiene; come suggerisce il appunto il nome; i paesi che appunto hanno eseguito un lancio missilistico (ad esempio Russia,Usa ecc..).\
-**4.** La colonna **Date** si spiega da sola come appunto suggerisce il nome.\
-**5.** La colonna **Detail** contiene il tipo di razzo utilizzato.\
-**6.** La colonna **Price** contiene il prezzo in milioni del lancio.\
-**7.** La colonna **Mission_Status** contiene lo stato della missione (ad esempio Success,Failure ecc..)
+Vi sono 9 colonne :\
+**1.** **Id:** un identificatore per ogni riga del dataset.\
+**2.** **Organisation:** nome dell'organizzazione che effettua lancio.\
+**3.** **Location:** luogo da dove hanno effettuato il lancio missilistico.\
+**4.** **Date:** data del lancio missilistico.\
+**5.** **Detail:** tipo di razzo utilizzato.\
+**6.** **Price:** il prezzo in milioni del lancio.\
+**7.** **Mission_Status:** l'esito che il lancio missilistico ha assunto.\
 
-## Domande Poste
-* Quali sono i paesi maggiori che eseguono questi lanci ?
+Le due colonne mancanti non sono state usate perchè non sarebbero servite alla mia analisi e sono: una seconda colonna Id tolta per rindondanza della prima colonna, la seconda colonna tolta è la seguente "Rocket_Status" non usata perchè nella mia analisi non sarebbe servita.
 
-* Qual'è il numero di fallimenti/successi di questi lanci missilistici ?
-
-## Motivazioni 
-
-1. Mi sono posto questa domanda per avere una visualizzazione visiva su un mappamondo di quest'ultimi paesi, dato che mi interessava sapere se magari oltre all' America e Russia ci fossero altre nazioni che investono in questo determinato campo
-
-2. Mi sono posto questa domanda per sapere se effettivamente i lanci missilistici sono in qualche modo utili oppure se sono solamente una spreco di risorse e sopratutto di soldi.
 
 ## Analisi effettuate
-Come risultati delle mie analisi ho prodotto due grafici.\ 
-Il primo il quale risponde alla prima domanda è una cartina geografica colorata in base al numero di lanci, verrà spiegata nel dettaglio nelle slide successive.\
+**Analisi uno**\
+Realizzazione di una cartina geografica colorata con una tonalità più scura a seconda del numero di lanci effettuati da quel determinato paese.\
 
-\
+**Analisi due**\
+Realizzazione di un grafico a barre anch'esso colorato usando colori diversi in base all'esito della missione per ogni anno partendo dal 1957 fino ad arrivare al 2020.
 
-Mentre il secondo risponde alla seconda ed è un barplot anch'esso colorato in base allo stato della missione, come spiegato prima anche questo grafico verrà spiegato nel dettaglio nelle sucessive slide
 
-## Primo Grafico 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+## Codice sorgente della prima analisi
+
+<style>
+pre {
+  white-space: pre !important;
+  overflow-y: scroll !important;
+  height: 60vh !important;
+}
+</style>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, eval=FALSE}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggmap)
+library(tidyr)
+
+#Dataset originali di partenza
+map.world = map_data("world")
+originalDataset = read.csv("mission_launches.csv")
+
+#Serie di mutate per estrarre il nome della nazione 
+df = originalDataset %>%
+  mutate(Country =str_split_i(originalDataset$Location, ',',-1))%>%
+  mutate(Country = str_trim(Country))
+
+#Conta il numero di volte che un paese compare nel dataset e li ordina in modo decrescente
+df_country = df %>%
+  group_by(Country) %>%
+  summarise(n = n()) %>%
+  arrange(-n)
+
+
+#left join per ottenere la longitudine e latitudine nella libreria map_data("world") per il geom_polygon
+map.world_joined = left_join( map.world, df_country,  by = c( 'region' = 'Country'))
+map.world_joined = map.world_joined %>%
+  mutate( n = replace_na(n, 0)) #rimpiazza il valore na con uno 0, usa il valoe n se è diverso da 0#
+
+#Cambio il tipo dei dati nella colonna n creata col mutate
+map.world_joined$n = as.numeric(map.world_joined$n)
+
+
+#Plotta il dataset map.world_joined creando una cartina geografica usando longitudine e latitudine 
+# colorando i paesi in colori diversi in base a quante volte compaiono nel dataset (ovvero hanno eseguito diversi lanci missilistici)
+ggplot() +
+  geom_polygon(data = map.world_joined, aes(x = long, y = lat, group = group, fill = n)) +
+  scale_fill_gradient(low = "#abdbe3", high = "#154c79") +
+  labs(title = "Lanci missilistici nel mondo", y="Latitudine", x="Longitudine") +
+  theme(text = element_text(color = "black",)
+    ,panel.background = element_rect(fill ="#FaFFFF")
+    ,plot.background = element_rect(fill = "white")
+    ,panel.grid = element_blank()
+    ,plot.title = element_text(size = 20)
+    ,axis.title.x = element_text(size = 10)
+    ,axis.title.y = element_text(size = 10)
+    ,legend.position = "none"
+  )
+```
+
+## Output della prima analisi
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
 library(stringr)
 library(ggplot2)
@@ -101,7 +164,58 @@ ggplot() +
 ```
 
 
-## Secondo Grafico
+## Commento della prima analisi
+\
+I paesi che effettuano più lanci missilistici sono Russia e USA. Tuttavia, ai vertici della classifica ci sono anche altri paesi che hanno un impegno considerevole in questo tipo di missioni quali Francia e Kazakistan.
+
+## Codice sorgente della seconda analisi
+
+<style>
+pre {
+  white-space: pre !important;
+  overflow-y: scroll !important;
+  height: 60vh !important;
+}
+</style>
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, eval=FALSE}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+#Dataset di partenza
+originalDataset = read.csv("mission_launches.csv")
+
+#Tramite una serie di mutate estrae l'anno dalla colonna Date
+df1=originalDataset %>%
+  mutate(Year =str_split_i(Date, ',',-1))%>%
+  mutate(Year= str_trim(Year))%>%
+  mutate(Year =str_split_i(Year, ' ',1))
+
+#Raggruppo Mission_Status e Year e li conto così da avere per ogni anno quanto stati di missione di missione ci sono stati
+df2= df1%>%
+  group_by(Mission_Status, Year)%>%
+  summarise(n = n())
+
+#Plotta il subset df2 mappando sulle x gli anni estratti poco prima e sulle y mappa il conto dei vari stati delle missioni
+ggplot(df2, mapping = aes(x= Year , y= n))+
+  geom_bar(stat = "identity", aes(fill = Mission_Status), width = 0.8, position = position_stack())+ #Colora le    varie barre del barplot in base allo stato delle missioni
+  labs(title = "Numero di stati che le missioni hanno assunto",
+    y="Numero di occorrenze", x="Anni analizzati (1957-2020)")+
+  theme(text = element_text(color = "black") #tra le parentesi del theme() ci sono degli elementi che rendono il   grafico più godibile e leggibile
+    ,panel.background = element_rect(fill ="#FaFFFF")
+    ,plot.background = element_rect(fill = "white")
+    ,panel.grid = element_blank()
+    ,plot.title = element_text(size = 20)
+    ,axis.ticks = element_blank()
+    ,axis.title.x = element_text(size = 10)
+    ,axis.title.y = element_text(size = 10)
+    ,axis.text.x = element_blank()
+  )
+```
+
+
+## Output della seconda analisi
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(dplyr)
 library(stringr)
@@ -125,7 +239,7 @@ df2= df1%>%
 # il conto dei vari stati delle missioni
 ggplot(df2, mapping = aes(x= Year , y= n))+
   geom_bar(stat = "identity", aes(fill = Mission_Status), width = 0.8, position = position_stack())+ #Colora le    varie barre del barplot diversamente in base allo stato delle missioni
-  labs(title = "Numero di stati che le missioni hanno assunto",
+  labs(title = "Esito delle missioni",
     y="Numero di occorrenze", x="Anni analizzati (1957-2020)")+
   theme(text = element_text(color = "black") #tra le parentesi del theme() ci sono degli elementi che rendono il   grafico più bello e leggibile
     ,panel.background = element_rect(fill ="#FaFFFF")
@@ -139,11 +253,23 @@ ggplot(df2, mapping = aes(x= Year , y= n))+
   )
 ```
 
+## Commento della seconda analsi 
+\
+Le missioni missilistiche dopo 4 anni iniziali dove i fallimenti sono stati maggiori dei successi, sono andate sempre di più a perfezionarsi portando un numero maggiore di successi rispetto ai fallimenti quindi, andando a migliorare il rapporto tra costi e benefici .
 
 ## Conclusioni
 
-Concludo dicendo che i paesi che effettuano più lanci missilistici sono come me lo aspettavo Russia e USA però ci sono anche paesi che sinceramente non avevo idea che organizzassero questo tipo di missioni, sto parlando della Francia e del Kazakistan. 
+L'obiettivo del progetto è studiare l'esito dei lanci missilistici, per fare ciò ho deciso di : \
+
+* Capire quali sono le nazioni che si sono impegnati di più in questo determinato campo.
+
+* Analizzare se effettivamente i lanci missilistici sono risultati utili o se si sono rivelati uno spreco di tempo e risorse.
+
+\
+
+Infine dai risultati ho scoperto che diversi paesi sono impegnati in questo campo e gli esiti  dopo 4 anni iniziali incerti si sono sempre di più migliorati dimostrando che non sono una perdita di investimenti.
+
+ 
 
 \ 
 
-Inoltre le missioni missilistiche dopo un paio d'anni iniziali dove i fallimenti sono stati maggiori dei successi dato che era una tecnologia nuova, sono andate sempre di più a perfezionarsi fino a raggiungere un numero di successi molto superiore al numero di fallimenti, quindi non sono state un completo spreco di risorse e denaro.
