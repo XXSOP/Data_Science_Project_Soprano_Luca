@@ -51,4 +51,5 @@ rsconnect/
 .idea/*
 
 .Rpoj/*
-.Rproj.user
+
+Progetto.Rproj
