@@ -41,7 +41,7 @@ Vi sono 9 colonne :\
 **6.** **Price:** il prezzo in milioni del lancio.\
 **7.** **Mission_Status:** l'esito che il lancio missilistico ha assunto.\
 
-Le due colonne mancanti non sono state usate perchè non sarebbero servite alla mia analisi e sono: una seconda colonna Id tolta per rindondanza della prima colonna, la seconda colonna tolta è la seguente "Rocket_Status" non usata perchè nella mia analisi non sarebbe servita.
+Le due colonne mancanti non sono state usate perchè non sarebbero servite alla mia analisi e sono: una seconda colonna **Id** tolta per rindondanza della prima colonna, la seconda colonna tolta è la seguente **"Rocket_Status"** non usata perchè nella mia analisi non sarebbe servita.
 
 
 ## Analisi effettuate
